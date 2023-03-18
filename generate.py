@@ -41,18 +41,19 @@ def inference(args):
   decoder =  LanguageModelDecoder(vocab, args.save_dir)
   args.save_dir.mkdir(parents=True, exist_ok=True)
 
-  header =  {'key':'C Major', 'meter':'4/4', 'unit note length':'1/8', 'rhythm':'reel'}
+  header =  {'key':f'C {args.key_mode}', 'meter':'4/4', 'unit note length':'1/8', 'rhythm':args.rhythm}
   num_generated = 0
-  rand_seed = 0
+  rand_seed = args.seed
   while num_generated < args.num_samples:
-    if rand_seed % 10 < 7:
-      header['key'] = 'C Major'
-    elif rand_seed % 3 == 0:
-      header['key'] = 'C minor'
-    elif rand_seed % 3 < 1:
-      header['key'] = 'C Dorian'
-    else:
-      header['key'] = 'C Mixolydian'
+    if args.key_mode == 'random':
+      if rand_seed % 10 < 7:
+        header['key'] = 'C Major'
+      elif rand_seed % 3 == 0:
+        header['key'] = 'C minor'
+      elif rand_seed % 3 < 1:
+        header['key'] = 'C Dorian'
+      else:
+        header['key'] = 'C Mixolydian'
 
     try:
       out = model.inference(vocab, manual_seed=rand_seed, header = header)
@@ -142,6 +143,10 @@ def get_parser():
   parser.add_argument('--save_audio', action='store_true')
   parser.add_argument('--save_image', action='store_true')
   parser.add_argument('--device', type=str, default='cpu')
+  parser.add_argument('--key_mode', type=str, default='random', choices=['random', 'Major', 'minor', 'Dorian', 'Mixolydian'])
+  parser.add_argument('--rhythm', type=str, default='reel', choices=['reel', 'jig'])
+  parser.add_argument('--seed', type=int, default=4035) # 4035 was the seed for the first-prize winning tune
+
   return parser
 
 
